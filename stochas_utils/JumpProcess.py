@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 from scipy.integrate import quad
 from scipy.optimize import root_scalar
 
-class PoissonProcess():
-    
+class JumpProcess():
+    """
+        Jump Stochastic Process
+    """
     def __init__(self):
         raise NotImplementedError
 
@@ -15,7 +17,7 @@ class PoissonProcess():
     def plot(self):
         raise NotImplementedError
 
-class HomoPoissonProcess(PoissonProcess):
+class HomoPoissonProcess(JumpProcess):
     """
         Homogeneous Poisson Process
     """
@@ -64,7 +66,7 @@ class HomoPoissonProcess(PoissonProcess):
     def plot(self, *args, **kwargs):
         return plt.plot(self.time_axis, self.Nt, *args, **kwargs)
 
-class InhomoPoissonProcess(PoissonProcess):
+class InhomoPoissonProcess(JumpProcess):
     """
         Homogeneous Poisson Process
     """
@@ -88,7 +90,7 @@ class InhomoPoissonProcess(PoissonProcess):
             while True: 
                 u = np.random.uniform(0, 1)
                 def func(T):
-                    integral, err = quad(self.lam ,t, T)
+                    integral, _ = quad(self.lam ,t, T)
                     return u - (1 - np.exp(-integral))
                 try:
                     tau = root_scalar(func, bracket=(t,T))
