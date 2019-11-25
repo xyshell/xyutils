@@ -78,15 +78,56 @@ class GenericCIRProcess(ContProcess):
             paths.append(path)
         return paths
 
+class CEVProcess(ContProcess):
+    '''
+        constant elasticity of variance Stochastic Process:
+        dSt = a*St*dt + b*St^gamma*dWt
+        params
+        :S0 (float) initial value
+        :a (float)
+        :b (float)
+        :gamma (float)
+    '''
+    def __init__(self, S0, a, b, gamma):
+        self.S0 = S0
+        self.a = a
+        self.b = b
+        self.gamma = gamma
+    
+    def generate(self, T, n, N, method='euler'):
+        """
+            generate process on [0, T]
+            params
+            :n (int) number of discretization on [0, T]
+            :N (int) number of paths
+            :method (str) 
+                euler: Euler Scheme
+        """
+        paths = []
+        for _ in range(N):
+            dWt = np.random.normal(0, np.sqrt(T/n), n)
+            for j in range(n):
+                if method == 'euler':
+                    if j == 0:
+                        path = [self.S0]
+                    St = path[j]
+                    St_plus = St + self.a*St*T/n + self.b*np.power(St, self.gamma)*dWt[j]
+                    path.append(St_plus)
+            paths.append(path)
+        return paths
+
 if __name__ == "__main__":
-    S0 = 0.1
-    k = 0.5
-    S_bar = 0.04
-    eta = 2
-    gamma = 3
-    sigma = 0.05 / np.power(S0, gamma)
-    gen_cir = GenericCIRProcess(S0, k, S_bar, sigma, eta, gamma)
+    T = 1
+    r = 0.01
+    a = 0.1
+    S0 = 100
+    gamma = 2 
+    b = 0.2/ np.power(S0, gamma-1)
+    N = T * 2**6
+    M = 1_000_000
+    cev = CEVProcess(S0, a, b, gamma)
     np.random.seed(seed=0)
-    gen_cir.generate(1, 252, 1, 'euler')
-    gen_cir.generate(1, 252, 1, 'doss')
-    gen_cir.generate(1, 252, 1, 'milstein')
+    euler_paths = cev.generate(1, 252, 1, 'euler')
+    print(euler_paths[0][:5])
+    print(doss_paths[0][:5])
+    print(milstein_paths[0][:5])
